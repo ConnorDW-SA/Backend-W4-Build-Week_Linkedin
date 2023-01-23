@@ -7,7 +7,7 @@ import {
   notFoundHandler,
   unauthorizedHandler,
 } from "./errorHandlers.js";
-import waifuRouter from "./api/waifu/index.js";
+import postsRouter from "./endpoints/postEndpoints.js";
 
 import mongoose from "mongoose";
 import dotenv from "dotenv";
@@ -19,7 +19,7 @@ const port = process.env.PORT || 3001;
 server.use(cors());
 server.use(express.json());
 
-server.use("/waifu", waifuRouter);
+server.use("/posts", postsRouter);
 
 server.use(badRequestHandler);
 server.use(unauthorizedHandler);
