@@ -5,9 +5,10 @@ import {
   badRequestHandler,
   genericServerErrorHandler,
   notFoundHandler,
-  unauthorizedHandler,
+  unauthorizedHandler
 } from "./errorHandlers.js";
 import postsRouter from "./endpoints/postEndpoints.js";
+import userRouter from "./endpoints/userEndpoints.js";
 
 import mongoose from "mongoose";
 import dotenv from "dotenv";
@@ -20,6 +21,7 @@ server.use(cors());
 server.use(express.json());
 
 server.use("/posts", postsRouter);
+server.use("/users", userRouter);
 
 server.use(badRequestHandler);
 server.use(unauthorizedHandler);
