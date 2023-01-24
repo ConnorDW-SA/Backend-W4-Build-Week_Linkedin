@@ -8,7 +8,7 @@ import {
     unauthorizedHandler,
 } from "./errorHandlers.js";
 import postsRouter from "./endpoints/postEndpoints.js";
-import userRouter from "./endpoints/userEndpoints.js";
+import userRouter from "./endpoints/usersEndpoints.js";
 import experienceRouter from "./endpoints/experiencesEndpoints.js";
 
 import mongoose from "mongoose";
