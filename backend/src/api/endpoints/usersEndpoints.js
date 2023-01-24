@@ -35,6 +35,17 @@ userRouter.get("/:id", async (req, res, next) => {
 userRouter.post("/", async (req, res, next) => {
   try {
     const newUser = new usersModel(req.body);
+    const existingUser = await usersModel.findOne({
+      username: newUser.username
+    });
+    if (existingUser) {
+      next(
+        createHttpError(
+          400,
+          `User with username ${newUser.username} already exists!`
+        )
+      );
+    }
     const { _id } = await newUser.save();
     res.status(201).send({ _id });
   } catch (error) {
