@@ -28,6 +28,7 @@ postsRouter.get("/", async (req, res, next) => {
       .sort(mongoQuery.options.sort)
       .skip(mongoQuery.options.skip)
       .limit(mongoQuery.options.limit);
+
     res.status(200).send({
       links: mongoQuery.links(total),
       total,
@@ -41,18 +42,16 @@ postsRouter.get("/", async (req, res, next) => {
 
 // GET SPECIFIC
 
-postsRouter.get("/:postsId", async (req, res, next) => {
+postsRouter.get("/:postId", async (req, res, next) => {
   try {
     const posts = await postsModel
-      .findById(req.params.postsId)
+      .findById(req.params.postId)
       .populate({ path: "review", select: "comment rate" });
 
     if (posts) {
       res.send(posts);
     } else {
-      next(
-        createHttpError(404, `posts with id ${req.params.postsId} not found`)
-      );
+      next(createHttpError(404, `post with id ${req.params.postId} not found`));
     }
   } catch (error) {
     next(error);
@@ -61,20 +60,18 @@ postsRouter.get("/:postsId", async (req, res, next) => {
 
 // PUT
 
-postsRouter.put("/:postsId", async (req, res, next) => {
+postsRouter.put("/:postId", async (req, res, next) => {
   try {
-    const updatedPosts = await postsModel.findByIdAndUpdate(
-      req.params.postsId,
+    const updatedPost = await postsModel.findByIdAndUpdate(
+      req.params.postId,
       req.body,
       { new: true, runValidators: true }
     );
 
-    if (updatedPosts) {
-      res.send(updatedposts);
+    if (updatedPost) {
+      res.send(updatedPost);
     } else {
-      next(
-        createHttpError(404, `posts with id ${req.params.postsId} not found`)
-      );
+      next(createHttpError(404, `post with id ${req.params.postId} not found`));
     }
   } catch (error) {
     next(error);
@@ -83,14 +80,14 @@ postsRouter.put("/:postsId", async (req, res, next) => {
 
 // DELETE
 
-postsRouter.delete("/:postsId", async (req, res, next) => {
+postsRouter.delete("/:postId", async (req, res, next) => {
   try {
-    const deletedPosts = await postsModel.findByIdAndDelete(req.params.postsId);
-    if (deletedPosts) {
+    const deletedPost = await postsModel.findByIdAndDelete(req.params.postId);
+    if (deletedPost) {
       res.status(204).send();
     } else {
       next(
-        createHttpError(404, `posts with id ${req.params.postsId} not found`)
+        createHttpError(404, `posts with id ${req.params.postId} not found`)
       );
     }
   } catch (error) {
