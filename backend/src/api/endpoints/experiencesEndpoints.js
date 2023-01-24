@@ -1,6 +1,5 @@
 import express from "express";
-import experiencesModel from "../routes/experiencesModel";
-import usersModel from "../routes/usersModel";
+import usersModel from "../routes/usersModel.js";
 import createHttpError from "http-errors";
 import mongoose from "mongoose";
 const router = express.Router();
