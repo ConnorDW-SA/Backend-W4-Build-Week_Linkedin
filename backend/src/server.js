@@ -6,7 +6,7 @@ import {
   genericServerErrorHandler,
   notFoundHandler,
   unauthorizedHandler
-} from "./api/errorHandlers.js";
+} from "./errorHandlers.js";
 import postsRouter from "./api/endpoints/postEndpoints.js";
 import userRouter from "./api/endpoints/usersEndpoints.js";
 import experienceRouter from "./api/endpoints/experiencesEndpoints.js";

@@ -19,6 +19,7 @@
     "express-list-endpoints": "^6.0.0",
     "express-validator": "^6.14.3",
     "http-errors": "^2.0.0",
+    "image-to-base64": "^2.2.0",
     "mongoose": "^6.8.4",
     "pdfmake": "^0.2.7",
     "query-to-mongo": "^0.10.2"
