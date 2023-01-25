@@ -10,39 +10,41 @@ export const getPDFReadableStream = async (user) => {
     Roboto: {
       normal: "Helvetica",
       bold: "Helvetica",
-      italics: "Helvetica"
-    }
+      italics: "Helvetica",
+    },
   };
 
   const printer = new PdfPrinter(fonts);
 
   const docDefinition = {
     content: [
-      { text: user.name, style: "header", margin: [0, 15, 0, 0] },
-      { text: user.surname, style: "subheader", margin: [0, 2] },
-      { text: user.title, style: "quote", margin: [0, 2] },
-      { text: user.area, style: "quote", margin: [0, 2] },
-
-      user.bio,
-      { image: "userImage", width: 200, height: 150, margin: [0, 10, 0, 0] }
+      {
+        text: user.name + " " + user.surname,
+        fontSize: 30,
+        alignment: "center",
+        margin: [0, 15, 0, 0],
+      },
+      {
+        text: user.title,
+        fontSize: 15,
+        alignment: "center",
+        margin: [0, 15, 0, 0],
+      },
+      {
+        text: user.area,
+        fontSize: 15,
+        alignment: "center",
+        margin: [0, 15, 0, 0],
+      },
+      {
+        image: "main",
+        width: 200,
+        alignment: "center",
+      },
     ],
     images: {
-      userImage: await createBase64Img(user.image)
+      main: await createBase64Img(user.image),
     },
-    styles: {
-      header: {
-        fontSize: 20,
-        bold: true,
-        color: "#123123"
-      },
-      subheader: {
-        fontSize: 15,
-        bold: true
-      },
-      quote: {
-        italics: true
-      }
-    }
   };
 
   const pdfReadableStream = printer.createPdfKitDocument(docDefinition);
