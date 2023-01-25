@@ -22,11 +22,13 @@ const userSchema = new Schema({
     image: {
         type: String,
         required: false,
-        get: function () {
-            return generateAvatar(this.name.charAt(0), this.surname.charAt(0));
-        },
+        default: "https://via.placeholder.com/200x200",
     },
     experiences: { type: [experiencesModel] },
+    password: {
+        type: String,
+        default: "password",
+    },
 });
 
 export default model("User", userSchema);
