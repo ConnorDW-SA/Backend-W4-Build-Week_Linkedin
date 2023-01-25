@@ -29,7 +29,8 @@ postsRouter.get("/", async (req, res, next) => {
             .find(mongoQuery.criteria, mongoQuery.options.fields)
             .sort(mongoQuery.options.sort)
             .skip(mongoQuery.options.skip)
-            .limit(mongoQuery.options.limit);
+            .limit(mongoQuery.options.limit)
+            .populate("user");
 
         res.status(200).send({
             links: mongoQuery.links(total),
