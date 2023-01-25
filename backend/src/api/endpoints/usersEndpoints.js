@@ -3,104 +3,153 @@ import usersModel from "../routes/usersModel.js";
 import createHttpError from "http-errors";
 import { getPDFReadableStream } from "../../lib/pdf-tools.js";
 import { pipeline } from "stream";
+import pkg from "imgur";
+const { ImgurClient } = pkg;
+import fs from "fs";
+import multer from "multer";
+
 const userRouter = express.Router();
 
-// GET /users
+const upload = multer({ dest: "uploads/" });
 
 userRouter.get("/", async (req, res, next) => {
-  try {
-    const users = await usersModel.find();
-    res.send(users);
-  } catch (error) {
-    next(error);
-  }
+    try {
+        const users = await usersModel.find();
+        res.send(users);
+    } catch (error) {
+        next(error);
+    }
 });
 
 // GET /users/:id
 
 userRouter.get("/:id", async (req, res, next) => {
-  try {
-    const user = await usersModel.findById(req.params.id);
-    if (user) {
-      res.send(user);
-    } else {
-      next(createHttpError(404, `User with id ${req.params.id} not found!`));
+    try {
+        const user = await usersModel.findById(req.params.id);
+        if (user) {
+            res.send(user);
+        } else {
+            next(
+                createHttpError(404, `User with id ${req.params.id} not found!`)
+            );
+        }
+    } catch (error) {
+        next(error);
     }
-  } catch (error) {
-    next(error);
-  }
 });
 
 // POST /users
 
 userRouter.post("/", async (req, res, next) => {
-  try {
-    const newUser = new usersModel(req.body);
-    const existingUser = await usersModel.findOne({
-      username: newUser.username,
-    });
-    if (existingUser) {
-      next(
-        createHttpError(
-          400,
-          `User with username ${newUser.username} already exists!`
-        )
-      );
+    try {
+        const newUser = new usersModel(req.body);
+        const existingUser = await usersModel.findOne({
+            username: newUser.username,
+        });
+        if (existingUser) {
+            next(
+                createHttpError(
+                    400,
+                    `User with username ${newUser.username} already exists!`
+                )
+            );
+        }
+        const { _id } = await newUser.save();
+        res.status(201).send({ _id });
+    } catch (error) {
+        next(error);
     }
-    const { _id } = await newUser.save();
-    res.status(201).send({ _id });
-  } catch (error) {
-    next(error);
-  }
 });
 
 // PUT /users/:id
 
 userRouter.put("/:id", async (req, res, next) => {
-  try {
-    const user = await usersModel.findByIdAndUpdate(req.params.id, req.body, {
-      runValidators: true,
-      new: true,
-    });
-    if (user) {
-      res.send(user);
-    } else {
-      next(createHttpError(404, `User with id ${req.params.id} not found!`));
+    try {
+        const user = await usersModel.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            {
+                runValidators: true,
+                new: true,
+            }
+        );
+        if (user) {
+            res.send(user);
+        } else {
+            next(
+                createHttpError(404, `User with id ${req.params.id} not found!`)
+            );
+        }
+    } catch (error) {
+        next(error);
     }
-  } catch (error) {
-    next(error);
-  }
 });
 
 // DELETE /users/:id
 
 userRouter.delete("/:id", async (req, res, next) => {
-  try {
-    const user = await usersModel.findByIdAndDelete(req.params.id);
-    if (user) {
-      res.status(204).send();
-    } else {
-      next(createHttpError(404, `User with id ${req.params.id} not found!`));
+    try {
+        const user = await usersModel.findByIdAndDelete(req.params.id);
+        if (user) {
+            res.status(204).send();
+        } else {
+            next(
+                createHttpError(404, `User with id ${req.params.id} not found!`)
+            );
+        }
+    } catch (error) {
+        next(error);
     }
-  } catch (error) {
-    next(error);
-  }
 });
 
 // PDF
 
 userRouter.get("/:id/pdf", async (req, res, next) => {
-  res.setHeader("Content-Disposition", "attachment; filename=cv.pdf");
-  try {
-    const user = await usersModel.findById(req.params.id);
-    const source = await getPDFReadableStream(user);
-    const destination = res;
-    pipeline(source, destination, (err) => {
-      if (err) console.log(err);
-    });
-  } catch (err) {
-    next(err);
-  }
+    res.setHeader("Content-Disposition", "attachment; filename=cv.pdf");
+    try {
+        const user = await usersModel.findById(req.params.id);
+        const source = await getPDFReadableStream(user);
+        const destination = res;
+        pipeline(source, destination, (err) => {
+            if (err) console.log(err);
+        });
+    } catch (err) {
+        next(err);
+    }
 });
+
+userRouter.post(
+    "/:id/picture",
+    upload.single("image"),
+    async (req, res, next) => {
+        const client = new ImgurClient({ clientId: process.env.IMGUR_CLIENT });
+        const { path: filepath } = req.file;
+        const user = await usersModel.findById(req.params.id);
+        if (user) {
+            const response = await client.upload({
+                image: fs.createReadStream(filepath),
+                type: "stream",
+            });
+            console.log(response);
+            const { id, link, deletehash } = response.data;
+
+            user.image = link;
+
+            usersModel
+                .findByIdAndUpdate(req.params.id, user)
+                .then((user) => {
+                    res.send(user);
+                })
+                .catch((err) => {
+                    next(createHttpError(404, `Error fetching user`));
+                });
+            // res.status(200).send(user);
+        } else {
+            next(
+                createHttpError(404, `User with id ${req.params.id} not found!`)
+            );
+        }
+    }
+);
 
 export default userRouter;
