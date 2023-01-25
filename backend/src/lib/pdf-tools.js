@@ -37,6 +37,12 @@ export const getPDFReadableStream = async (user) => {
         margin: [0, 15, 0, 0],
       },
       {
+        text: user.bio,
+        fontSize: 15,
+        alignment: "center",
+        margin: [0, 15, 0, 0],
+      },
+      {
         image: "main",
         width: 200,
         alignment: "center",
