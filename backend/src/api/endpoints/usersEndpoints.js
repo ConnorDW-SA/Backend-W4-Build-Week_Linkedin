@@ -3,15 +3,14 @@ import usersModel from "../routes/usersModel.js";
 import createHttpError from "http-errors";
 import { getPDFReadableStream } from "../../lib/pdf-tools.js";
 import { pipeline } from "stream";
-import { ImgurClient } from "imgur";
+import pkg from "imgur";
+const { ImgurClient } = pkg;
 import fs from "fs";
 import multer from "multer";
+
 const userRouter = express.Router();
 
 const upload = multer({ dest: "uploads/" });
-const client = new ImgurClient({ clientId: process.env.IMGUR_CLIENT });
-
-// GET /users
 
 userRouter.get("/", async (req, res, next) => {
     try {
@@ -123,6 +122,7 @@ userRouter.post(
     "/:id/picture",
     upload.single("image"),
     async (req, res, next) => {
+        const client = new ImgurClient({ clientId: process.env.IMGUR_CLIENT });
         const { path: filepath } = req.file;
         const user = await usersModel.findById(req.params.id);
         if (user) {
@@ -130,13 +130,13 @@ userRouter.post(
                 image: fs.createReadStream(filepath),
                 type: "stream",
             });
-
+            console.log(response);
             const { id, link, deletehash } = response.data;
 
-            const newUser = { ...user, image: link };
+            user.image = link;
 
             usersModel
-                .findByIdAndUpdate(req.params.id, newUser)
+                .findByIdAndUpdate(req.params.id, user)
                 .then((user) => {
                     res.send(user);
                 })

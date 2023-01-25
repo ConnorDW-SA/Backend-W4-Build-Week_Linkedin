@@ -1,4 +1,7 @@
 import express from "express";
+import dotenv from "dotenv";
+
+dotenv.config();
 import listEndpoints from "express-list-endpoints";
 import cors from "cors";
 import {
@@ -13,9 +16,6 @@ import experienceRouter from "./api/endpoints/experiencesEndpoints.js";
 import authRouter from "./api/endpoints/auth.js";
 
 import mongoose from "mongoose";
-import dotenv from "dotenv";
-
-dotenv.config();
 const server = express();
 const port = process.env.PORT || 3001;
 
