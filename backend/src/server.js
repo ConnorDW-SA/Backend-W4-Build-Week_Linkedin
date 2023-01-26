@@ -8,7 +8,7 @@ import {
   badRequestHandler,
   genericServerErrorHandler,
   notFoundHandler,
-  unauthorizedHandler,
+  unauthorizedHandler
 } from "./errorHandlers.js";
 import postsRouter from "./api/endpoints/postEndpoints.js";
 import userRouter from "./api/endpoints/usersEndpoints.js";

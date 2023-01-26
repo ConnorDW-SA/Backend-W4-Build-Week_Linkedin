@@ -39,7 +39,7 @@ router.get("/:id/experiences/csv", async (req, res, next) => {
     if (user) {
       const myData = user.experiences;
       const opts = {
-        fields: ["role", "company", "startDate"],
+        fields: ["role", "company", "startDate"]
       };
       const parser = new Parser(opts);
       const csv = parser.parse(myData);
@@ -82,6 +82,20 @@ router.get(
     POST
 */
 router.post("/:id/experiences", doesUserExist, async (req, res, next) => {
+  const { id } = req.params;
+  if (!mongoose.isValidObjectId(id)) {
+    return next(createHttpError(400, `Must include a valid ID`));
+  }
+  const newExperience = { ...req.body, _id: mongoose.Types.ObjectId() };
+  const updatedUser = await usersModel.findByIdAndUpdate(
+    id,
+    {
+      $push: { experiences: newExperience }
+    },
+    { runValidators: true, new: true }
+  );
+  res.send(updatedUser);
+
   //
 });
 /*
@@ -91,9 +105,21 @@ router.put(
   "/:id/experiences/:exp_id",
   doesUserExist,
   async (req, res, next) => {
-    //
+    const { id, exp_id } = req.params;
+    if (!mongoose.isValidObjectId(id) || !mongoose.isValidObjectId(exp_id))
+      return next(createHttpError(400, `Must include a valid ID`));
+
+    await usersModel.findOneAndUpdate(
+      { _id: id, "experiences._id": exp_id },
+      { $set: { "experiences.$": { ...req.body } } }
+    );
+
+    return res.send({ message: "OK", ...req.body });
   }
 );
+
+//
+
 /*
     DELETE
 */
@@ -116,8 +142,8 @@ router.delete(
 
     await usersModel.findByIdAndUpdate(id, {
       $set: {
-        experiences: newExperiences,
-      },
+        experiences: newExperiences
+      }
     });
 
     return res.send({ message: "OK" });
