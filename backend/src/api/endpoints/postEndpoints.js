@@ -33,8 +33,16 @@ postsRouter.get("/", async (req, res, next) => {
       .sort(mongoQuery.options.sort)
       .skip(mongoQuery.options.skip)
       .limit(mongoQuery.options.limit)
-      .populate("user");
+      .populate("user")
 
+      .populate({
+        path: "comments",
+        populate: {
+          path: "author",
+          model: "User",
+          select: "name surname",
+        },
+      });
     res.status(200).send({
       links: mongoQuery.links(total),
       total,
