@@ -29,6 +29,14 @@ const userSchema = new Schema({
         type: String,
         default: "password",
     },
+    requests: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: "User",
+    },
+    friends: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: "User",
+    },
 });
 
 export default model("User", userSchema);
