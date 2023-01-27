@@ -25,7 +25,9 @@ userRouter.get("/", async (req, res, next) => {
 
 userRouter.get("/:id", async (req, res, next) => {
     try {
-        const user = await usersModel.findById(req.params.id);
+        const user = await usersModel
+            .findById(req.params.id)
+            .populate("requests friends");
         if (user) {
             res.send(user);
         } else {
@@ -33,6 +35,40 @@ userRouter.get("/:id", async (req, res, next) => {
                 createHttpError(404, `User with id ${req.params.id} not found!`)
             );
         }
+    } catch (error) {
+        next(error);
+    }
+});
+
+userRouter.get("/:id/request/:sid", async (req, res, next) => {
+    const { id, sid } = req.params;
+    try {
+        const user = await usersModel.findById(id);
+        const sender = await usersModel.findById(sid);
+
+        if (user.friends.includes(sid))
+            return res.status(403).send({
+                message: "Already friends",
+            });
+        if (user.requests.includes(id))
+            return res.status(403).send({
+                message:
+                    "You already have a pending friend request to this user",
+            });
+
+        //now let's add the sender to the users requests list
+        await usersModel.updateOne(
+            {
+                _id: id,
+            },
+            {
+                $addToSet: {
+                    requests: sid,
+                },
+            }
+        );
+
+        res.send({ message: "Friend request sent" });
     } catch (error) {
         next(error);
     }
