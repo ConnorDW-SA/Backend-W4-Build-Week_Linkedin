@@ -74,6 +74,87 @@ userRouter.get("/:id/request/:sid", async (req, res, next) => {
     }
 });
 
+userRouter.get("/:id/accept/:sid", async (req, res, next) => {
+    const { id, sid } = req.params;
+    try {
+        const user = await usersModel.findById(id);
+        const sender = await usersModel.findById(sid);
+
+        if (user.friends.includes(sid))
+            return res.status(403).send({
+                message: "Already friends",
+            });
+        if (!user.requests.includes(sid))
+            return res.status(403).send({
+                message: "You don't have a request from this user",
+            });
+        //add the user to the friends list and remove them from requests
+        await usersModel.updateOne(
+            {
+                _id: id,
+            },
+            {
+                $pull: {
+                    requests: sid,
+                },
+                $addToSet: {
+                    friends: sid,
+                },
+            }
+        );
+        await usersModel.updateOne(
+            {
+                _id: sid,
+            },
+            {
+                $pull: {
+                    requests: id,
+                },
+                $addToSet: {
+                    friends: id,
+                },
+            }
+        );
+        res.send({ message: "Added" });
+    } catch (error) {
+        next(error);
+    }
+});
+userRouter.get("/:id/remove/:sid", async (req, res, next) => {
+    const { id, sid } = req.params;
+    try {
+        const user = await usersModel.findById(id);
+        const sender = await usersModel.findById(sid);
+
+        //remove the user to the friends list and remove them from requests
+        await usersModel.updateOne(
+            {
+                _id: id,
+            },
+            {
+                $pull: {
+                    requests: sid,
+                    friends: sid,
+                },
+            }
+        );
+        await usersModel.updateOne(
+            {
+                _id: sid,
+            },
+            {
+                $pull: {
+                    requests: id,
+                    friends: id,
+                },
+            }
+        );
+        res.send({ message: "Removed" });
+    } catch (error) {
+        next(error);
+    }
+});
+
 // POST /users
 
 userRouter.post("/", async (req, res, next) => {
